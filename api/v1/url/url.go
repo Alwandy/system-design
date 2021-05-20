@@ -3,15 +3,11 @@ package url
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/Alwandy/system-design/pkg/dynamodb"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 )
-
-type urlJson struct {
-	Url 		string `json:"url"`
-	shortenUrl 	string `json:"shortenUrl"`
-}
 
 type Bitly struct {
 	CreatedAt      string        `json:"created_at"`
@@ -30,7 +26,7 @@ type Bitly struct {
 var bitlyToken = "5a4f5d9332f3eb753d19dcc5bf7fc636942dc4b9"
 
 func NewUrlHandler(w http.ResponseWriter, r *http.Request) {
-	var u urlJson
+	var u models.urlJson
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&u); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -53,7 +49,14 @@ func NewUrlHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u.shortenUrl = m.Link
+	u.ShortenUrl = m.Link
+	err = db.CreateItem(u)
+
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	respondWithJSON(w, http.StatusCreated, u)
 	return
 }

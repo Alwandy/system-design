@@ -3,10 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/Alwandy/system-design/api/v1/url"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/Alwandy/system-design/pkg/dynamodb"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -28,7 +25,7 @@ func main() {
 	}
 
 	// Create Tables if first time setup
-	initDynamoDB()
+	db.CreateTables()
 
 	log.Printf("[INFO] Server started on %s\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
