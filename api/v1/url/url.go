@@ -3,7 +3,9 @@ package url
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/Alwandy/system-design/models"
 	"github.com/Alwandy/system-design/pkg/dynamodb"
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +28,7 @@ type Bitly struct {
 var bitlyToken = "5a4f5d9332f3eb753d19dcc5bf7fc636942dc4b9"
 
 func NewUrlHandler(w http.ResponseWriter, r *http.Request) {
-	var u models.urlJson
+	u := models.Url{}
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&u); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -62,8 +64,18 @@ func NewUrlHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func GetUrl(w http.ResponseWriter, r *http.Request) {
+func GetUrlHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id := params["id"]
+	res := models.Url{}
+	res, err := db.GetItem(id)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
+	http.Redirect(w, r, res.Url, 307)
+	return
 }
 
 func callBitly(url string) ([]byte, error) {

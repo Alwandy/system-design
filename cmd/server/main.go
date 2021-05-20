@@ -14,7 +14,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
 	r.HandleFunc("/api/v1/url/newurl", url.NewUrlHandler).Methods("POST")
-	r.HandleFunc("/api/v1/url/{id}", nil).Methods("GET")
+	r.HandleFunc("/api/v1/url/{id:[a-zA-Z0-9]+}", url.GetUrlHandler).Methods("GET")
 
 	srv := &http.Server{
 		Handler: r,

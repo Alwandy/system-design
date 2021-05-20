@@ -1,7 +1,7 @@
 package models
 
-type urlJson struct {
-	ShortenUrl 	string `json:"shortenUrl"`
-	Url 		string `json:"url"`
+type Url struct {
+	ShortenUrl 	string `json:"ShortenUrl"`
+	Url 		string `json:"URL"`
 }
 

@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"github.com/Alwandy/system-design/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -13,11 +14,6 @@ import (
 )
 
 type DB struct {}
-
-type Item struct {
-	ShortenUrl   	string
-	Url  			string
-}
 
 var (
 	creds = credentials.NewStaticCredentials(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), "")
@@ -68,9 +64,9 @@ func CreateTables() {
 	}
 }
 
-func CreateItem(url Item) error{
+func CreateItem(url models.Url) error{
 	var db = DB{}
-	item := Item{
+	item := models.Url{
 		ShortenUrl:   url.ShortenUrl,
 		Url:	url.Url,
 	}
@@ -92,4 +88,34 @@ func CreateItem(url Item) error{
 	}
 
 	return nil
+}
+
+func GetItem(id string) (models.Url, error){
+	var db = DB{}
+	var url = fmt.Sprintf("https://bit.ly/%s", id)
+	urlObject := models.Url{}
+	var queryInput = &dynamodb.QueryInput{
+		TableName: aws.String(tableName),
+		KeyConditions: map[string]*dynamodb.Condition{
+			"ShortenUrl": {
+				ComparisonOperator: aws.String("EQ"),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					{
+						S: aws.String(url),
+					},
+				},
+			},
+		},
+	}
+
+	var resp, err = db.conn().Query(queryInput)
+	if err != nil {
+		return urlObject, errors.New(fmt.Sprintf("Got error calling GetItem:%s", err))
+	}
+
+	// Deference the pointer
+	urlObject.ShortenUrl = *resp.Items[0]["ShortenUrl"].S
+	urlObject.Url = *resp.Items[0]["URL"].S
+
+	return urlObject, nil
 }
