@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/Alwandy/system-design/api/v1/url"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -11,7 +16,7 @@ import (
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
-	r.HandleFunc("/api/v1/url/newUrl", url.NewUrlHandler).Methods("POST")
+	r.HandleFunc("/api/v1/url/newurl", url.NewUrlHandler).Methods("POST")
 	r.HandleFunc("/api/v1/url/{id}", nil).Methods("GET")
 
 	srv := &http.Server{
@@ -21,6 +26,10 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
+
+	// Create Tables if first time setup
+	initDynamoDB()
+
 	log.Printf("[INFO] Server started on %s\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }
